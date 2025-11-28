@@ -1,40 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reproductor HLS</title>
-  <style>
-    body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    video { width: 90%; max-width: 900px; height: auto; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reproductor HLS Público</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+body { margin:0; background:#1e1e2e; color:#e0e0e0; font-family:'Roboto',sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px;}
+h1 { color:#7b2cbf; margin-bottom:20px;}
+#video-container { width:90%; max-width:900px; display:flex; flex-direction:column; align-items:center; }
+video { width:100%; border-radius:12px; border:2px solid #444; background:black; }
+#channel-list { margin-top:20px; width:90%; max-width:900px; display:flex; flex-direction:column; gap:5px;}
+.category { margin-bottom:10px; }
+.cat-title { font-weight:bold; color:#2ec4b6; cursor:pointer; margin-bottom:5px; }
+.channel { padding:5px 10px; background:#333; border-radius:6px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+button { padding:5px 10px; border:none; border-radius:6px; cursor:pointer; background:#7b2cbf; color:white; }
+button:hover { background:#9d4edd; }
+#controls { margin-top:10px; display:flex; gap:10px; }
+</style>
 </head>
 <body>
+
+<h1>Mi Reproductor HLS Público</h1>
+
+<div id="video-container">
   <video id="video" controls autoplay playsinline></video>
+  <div id="controls">
+    <button onclick="toggleFullscreen()">Fullscreen</button>
+    <button onclick="togglePiP()">PiP</button>
+    <button onclick="toggleVideoSize()">Cambiar tamaño</button>
+  </div>
+</div>
 
-  <!-- hls.js solo si no hay soporte nativo -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script>
-    const video = document.getElementById('video');
-    const videoSrc = "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8";
+<div id="channel-list"></div>
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Navegadores con HLS nativo (Safari, Edge, etc)
-      video.src = videoSrc;
-      video.addEventListener('loadedmetadata', () => {
-        video.play();
-      });
-    } else if (Hls.isSupported()) {
-      // Otros navegadores con hls.js
-      const hls = new Hls();
-      hls.loadSource(videoSrc);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play();
-      });
-    } else {
-      alert("Tu navegador no soporta HLS.");
-    }
-  </script>
+<script>
+// ----------- LISTA DE CANALES (EDITA AQUÍ) -----------
+const channels = {
+  "Noticias": [
+    { name: "CNN", url: "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8" },
+    { name: "BBC", url: "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/10.m3u8" }
+  ],
+  "Deportes": [
+    { name: "ESPN", url: "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/11.m3u8" }
+  ]
+};
+
+// ----------- FUNCIONES DE VIDEO -----------
+const video = document.getElementById('video');
+let hls;
+let videoSizeLevel = 1;
+function play(url) {
+  if(hls){ try{hls.destroy(); } catch(e){} hls=null; }
+  if(video.canPlayType('application/vnd.apple.mpegurl')){
+    video.src = url;
+    video.play().catch(()=>{});
+  } else if(Hls.isSupported()){
+    hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+    hls.on(Hls.Events.MANIFEST_PARSED, ()=>{ video.play().catch(()=>{}); });
+  } else { alert("Tu navegador no soporta HLS."); }
+}
+function toggleFullscreen(){ if(!document.fullscreenElement) video.requestFullscreen().catch(()=>{}); else document.exitFullscreen(); }
+function togglePiP(){ if(document.pictureInPictureElement) document.exitPictureInPicture().catch(()=>{}); else video.requestPictureInPicture().catch(()=>{}); }
+function toggleVideoSize(){ videoSizeLevel++; if(videoSizeLevel>4) videoSizeLevel=1; const sizes=['25%','50%','75%','100%']; video.style.width=sizes[videoSizeLevel-1]; }
+
+// ----------- RENDERIZAR CANALES -----------
+const listDiv = document.getElementById('channel-list');
+Object.keys(channels).forEach(cat=>{
+  const catDiv = document.createElement('div'); catDiv.className = 'category';
+  const title = document.createElement('div'); title.className='cat-title'; title.textContent=cat;
+  const container = document.createElement('div'); container.style.display='flex'; container.style.flexDirection='column'; container.style.gap='3px'; 
+  container.style.marginLeft='10px';
+  title.addEventListener('click', ()=>{ container.style.display = container.style.display==='none'?'flex':'none'; });
+  channels[cat].forEach(ch=>{
+    const chDiv = document.createElement('div'); chDiv.className='channel';
+    const nameDiv = document.createElement('div'); nameDiv.textContent=ch.name;
+    const btn = document.createElement('button'); btn.textContent='▶'; btn.onclick = ()=>play(ch.url);
+    chDiv.appendChild(nameDiv); chDiv.appendChild(btn); container.appendChild(chDiv);
+  });
+  catDiv.appendChild(title); catDiv.appendChild(container);
+  listDiv.appendChild(catDiv);
+});
+</script>
 </body>
 </html>
