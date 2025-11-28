@@ -1,26 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<title>Mi Reproductor Online</title>
-<meta charset="UTF-8">
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reproductor de Video Online</title>
+  <!-- Video.js CSS -->
+  <link href="https://vjs.zencdn.net/8.0.1/video-js.css" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      background-color: #121212;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .video-container {
+      width: 90%;
+      max-width: 900px;
+    }
+  </style>
 </head>
-<body style="background:#000; margin:0; display:flex; justify-content:center; align-items:center; height:100vh;">
+<body>
+  <div class="video-container">
+    <video
+      id="my-video"
+      class="video-js vjs-big-play-centered"
+      controls
+      autoplay
+      preload="auto"
+      playsinline
+      width="100%"
+      height="auto"
+      data-setup='{}'
+    >
+      <source src="https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8" type="application/x-mpegURL" />
+      Tu navegador no soporta este video.
+    </video>
+  </div>
 
-<video id="video" controls autoplay width="100%" height="100%"></video>
-
-<script>
-var video = document.getElementById('video');
-var url = "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8";
-
-if (Hls.isSupported()) {
-    var hls = new Hls();
-    hls.loadSource(url);
-    hls.attachMedia(video);
-} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = url;
-}
-</script>
-
+  <!-- Video.js JS -->
+  <script src="https://vjs.zencdn.net/8.0.1/video.min.js"></script>
+  <script>
+    const player = videojs('my-video');
+    player.requestFullscreen();
+  </script>
 </body>
 </html>
