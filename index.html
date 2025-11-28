@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mi Reproductor Online</title>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body style="background:#000; margin:0; display:flex; justify-content:center; align-items:center; height:100vh;">
+
+<video id="video" controls autoplay width="100%" height="100%"></video>
+
+<script>
+var video = document.getElementById('video');
+var url = "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8";
+
+if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(video);
+} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = url;
+}
+</script>
+
+</body>
+</html>
