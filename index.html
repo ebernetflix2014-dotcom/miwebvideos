@@ -10,27 +10,30 @@
   </style>
 </head>
 <body>
-  <video id="video" controls autoplay></video>
+  <video id="video" controls autoplay playsinline></video>
 
-  <!-- hls.js -->
+  <!-- hls.js solo si no hay soporte nativo -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
     const video = document.getElementById('video');
     const videoSrc = "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8";
 
-    if(Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(videoSrc);  // Carga primero la M3U8
-      hls.attachMedia(video);    // Adjunta al <video>
-      hls.on(Hls.Events.MANIFEST_PARSED, function() {
-        video.play();            // Autoplay al cargar
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari soporta HLS nativo
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Navegadores con HLS nativo (Safari, Edge, etc)
       video.src = videoSrc;
-      video.addEventListener('loadedmetadata', function() {
+      video.addEventListener('loadedmetadata', () => {
         video.play();
       });
+    } else if (Hls.isSupported()) {
+      // Otros navegadores con hls.js
+      const hls = new Hls();
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+      });
+    } else {
+      alert("Tu navegador no soporta HLS.");
     }
   </script>
 </body>
