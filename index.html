@@ -3,47 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reproductor de Video Online</title>
-  <!-- Video.js CSS -->
-  <link href="https://vjs.zencdn.net/8.0.1/video-js.css" rel="stylesheet" />
+  <title>Reproductor HLS</title>
   <style>
-    body {
-      margin: 0;
-      background-color: #121212;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .video-container {
-      width: 90%;
-      max-width: 900px;
-    }
+    body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    video { width: 90%; max-width: 900px; height: auto; }
   </style>
 </head>
 <body>
-  <div class="video-container">
-    <video
-      id="my-video"
-      class="video-js vjs-big-play-centered"
-      controls
-      autoplay
-      preload="auto"
-      playsinline
-      width="100%"
-      height="auto"
-      data-setup='{}'
-    >
-      <source src="https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8" type="application/x-mpegURL" />
-      Tu navegador no soporta este video.
-    </video>
-  </div>
+  <video id="video" controls autoplay></video>
 
-  <!-- Video.js JS -->
-  <script src="https://vjs.zencdn.net/8.0.1/video.min.js"></script>
+  <!-- hls.js -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script>
-    const player = videojs('my-video');
-    player.requestFullscreen();
+    const video = document.getElementById('video');
+    const videoSrc = "https://tv.topmediatv.net:25463/live/TopMediaWeb/bOteTR8ED1/9.m3u8";
+
+    if(Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(videoSrc);  // Carga primero la M3U8
+      hls.attachMedia(video);    // Adjunta al <video>
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+        video.play();            // Autoplay al cargar
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari soporta HLS nativo
+      video.src = videoSrc;
+      video.addEventListener('loadedmetadata', function() {
+        video.play();
+      });
+    }
   </script>
 </body>
 </html>
